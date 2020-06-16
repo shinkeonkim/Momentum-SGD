@@ -58,7 +58,6 @@
 2차원 평면에서 생성자의 매개변수로 주어지는
 `점의 개수`, `생성하려는 정규분포 데이터 x값의 평균` ,`생성하려는 정규분포 데이터 x값의 분산`, `y값 가중치`, `y값의 노이즈`에 따라 2차원 데이터를 생성하고, 관리하는 클래스입니다.
 
-
 ```python
 import numpy as np
 import matplotlib.pyplot as plt
@@ -106,6 +105,9 @@ optimizer = tf.train.MomentumOptimizer(learning_rate=0.001, momentum=0.9)
 ```
 
 **TensorFlow 전체 코드**
+
+> filename: src/tensorflowLinearRegression.py
+
 ```python
 import numpy as np
 import matplotlib.pyplot as plt
@@ -113,7 +115,7 @@ import tensorflow as tf
 from twoDData import twoDData
 
 # linearRegression 코드
-def dataLearning(x_data, y_data, learning_rate, momentum):
+def dataLearning(x_data, y_data, learning_rate, momentum, step):
     # W = 기울기, b = y절편
     W = tf.Variable(tf.random_uniform([1], -1.0, 1.0))
     b = tf.Variable(tf.zeros([1]))
@@ -132,7 +134,7 @@ def dataLearning(x_data, y_data, learning_rate, momentum):
 
     train_set = [] 
 
-    for step in np.arange(100):
+    for step in np.arange(step):
         sess.run(train)
         train_set.append([sess.run(W), sess.run(b), sess.run(loss)])
 
@@ -151,11 +153,11 @@ def dataLearning(x_data, y_data, learning_rate, momentum):
 
 if __name__ == '__main__':
     num_points=50
-    data = twoDData(num_points, 5, 5, 10 , 5)
+    data = twoDData(num_points, 5, 5, 10, 5,100)
     x_data, y_data=data.dataGeneration()
     data.dataDraw()
 
-    W_data, v_data, loss_data = dataLearning(x_data, y_data, 0.001, 0.9)
+    W_data, v_data, loss_data = dataLearning(x_data, y_data, 0.001, 0.9, 100)
 
     plt.figure(2)
     plt.plot(np.linspace(0,100,100),loss_data,color='orange')
@@ -179,12 +181,58 @@ if __name__ == '__main__':
 
 ## 2-3. TensorFlow를 활용한 모멘텀 동작 코드 단위 테스트
 
+```python
+import numpy as np
+import matplotlib.pyplot as plt
+import tensorflow as tf
+from twoDData import twoDData
+from tensorflowLinearRegression import dataLearning
 
+class tensorflowLinearRegressionTest(tf.test.TestCase):
+    def testLearning1(self):
+        num_points=50
+        learning_step = 500
+        learning_rate = 0.01
+        data = twoDData(num_points, 5, 5, 10, 5)
+        x_data, y_data=data.dataGeneration()
+        expected_W = (num_points * np.sum(x_data * y_data) - (np.sum(x_data) * np.sum(y_data))) / (num_points* np.sum(x_data**2) - (np.sum(x_data))**2)
+        expected_v = (np.sum(y_data) - expected_W*np.sum(x_data))/num_points
+        W_data, v_data, loss_data = dataLearning(x_data, y_data, learning_rate, 0.9, learning_step)
+        self.assertAlmostEqual(expected_W, W_data[-1], delta = 0.001)
+        self.assertAlmostEqual(expected_v, v_data[-1], delta = 0.001)
+
+    def testLearning2(self):
+        num_points=100
+        learning_step = 1000
+        learning_rate = 0.001
+        data = twoDData(num_points, 10, 10, 10, 5)
+        x_data, y_data=data.dataGeneration()
+        expected_W = (num_points * np.sum(x_data * y_data) - (np.sum(x_data) * np.sum(y_data))) / (num_points* np.sum(x_data**2) - (np.sum(x_data))**2)
+        expected_v = (np.sum(y_data) - expected_W*np.sum(x_data))/num_points
+        W_data, v_data, loss_data = dataLearning(x_data, y_data, learning_rate, 0.9, learning_step)
+        self.assertAlmostEqual(expected_W, W_data[-1], delta = 0.001)
+        self.assertAlmostEqual(expected_v, v_data[-1], delta = 0.001)
+
+
+if __name__ == "__main__":
+    tf.test.main()
+```
 
 ## 2-4. 단위 테스트 결과
 
+```
+Running tests under Python 3.7.3: C:\Users\kimshinkeon\Anaconda3\python.exe
+[ RUN      ] tensorflowLinearRegressionTest.testLearning1
+[       OK ] tensorflowLinearRegressionTest.testLearning1
+[ RUN      ] tensorflowLinearRegressionTest.testLearning2
+[       OK ] tensorflowLinearRegressionTest.testLearning2
+[ RUN      ] tensorflowLinearRegressionTest.test_session
+[  SKIPPED ] tensorflowLinearRegressionTest.test_session
+----------------------------------------------------------------------
+Ran 3 tests in 23.923s
 
-
+OK (skipped=1)
+```
 
 ## 3. 모멘텀 SGD의 구체화
 

@@ -4,7 +4,7 @@ import tensorflow as tf
 from twoDData import twoDData
 
 # linearRegression 코드
-def dataLearning(x_data, y_data, learning_rate, momentum):
+def dataLearning(x_data, y_data, learning_rate, momentum, step):
     # W = 기울기, b = y절편
     W = tf.Variable(tf.random_uniform([1], -1.0, 1.0))
     b = tf.Variable(tf.zeros([1]))
@@ -23,7 +23,7 @@ def dataLearning(x_data, y_data, learning_rate, momentum):
 
     train_set = [] 
 
-    for step in np.arange(100):
+    for step in np.arange(step):
         sess.run(train)
         train_set.append([sess.run(W), sess.run(b), sess.run(loss)])
 
@@ -42,11 +42,11 @@ def dataLearning(x_data, y_data, learning_rate, momentum):
 
 if __name__ == '__main__':
     num_points=50
-    data = twoDData(num_points, 5, 5, 10, 5)
+    data = twoDData(num_points, 5, 5, 10, 5,100)
     x_data, y_data=data.dataGeneration()
     data.dataDraw()
 
-    W_data, v_data, loss_data = dataLearning(x_data, y_data, 0.001, 0.9)
+    W_data, v_data, loss_data = dataLearning(x_data, y_data, 0.001, 0.9, 100)
 
     plt.figure(2)
     plt.plot(np.linspace(0,100,100),loss_data,color='orange')

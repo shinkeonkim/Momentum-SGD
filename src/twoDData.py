@@ -18,8 +18,8 @@ class twoDData:
             y = x * self.y_weight + np.random.randint(-self.noise_range, self.noise_range)
             data_set.append([x, y])
 
-        x_data = [i[0] for i in data_set]
-        y_data = [i[1] for i in data_set]
+        x_data = np.array([i[0] for i in data_set])
+        y_data = np.array([i[1] for i in data_set])
 
         self.x_data = x_data
         self.y_data = y_data
