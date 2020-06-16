@@ -3,13 +3,17 @@ import matplotlib.pyplot as plt
 import tensorflow as tf
 from twoDData import twoDData
 
-def dataLearning(x_data, y_data):
+# linearRegression 코드
+def dataLearning(x_data, y_data, learning_rate, momentum):
+    # W = 기울기, b = y절편
     W = tf.Variable(tf.random_uniform([1], -1.0, 1.0))
     b = tf.Variable(tf.zeros([1]))
     y = W * x_data + b
     
+    # 손실 함수 정의
     loss = tf.reduce_mean(tf.square(y - y_data))
-    optimizer = tf.train.MomentumOptimizer(learning_rate=0.001, momentum=0.9)
+    # optimize는 MomentumOptimizer를 사용한다.
+    optimizer = tf.train.MomentumOptimizer(learning_rate = learning_rate, momentum = momentum)
 
     train = optimizer.minimize(loss)
     
@@ -31,19 +35,20 @@ def dataLearning(x_data, y_data):
 
     W_data = [t[0] for t in train_set]
     v_data = [t[1] for t in train_set]
-    Loss_data= [t[2] for t in train_set]
+    loss_data= [t[2] for t in train_set]
 
-    return W_data,v_data, Loss_data
+    return W_data,v_data, loss_data
 
 
 if __name__ == '__main__':
     num_points=50
-    data = twoDData(num_points, 5, 10, 5 , 1)
+    data = twoDData(num_points, 5, 5, 10, 5)
     x_data, y_data=data.dataGeneration()
     data.dataDraw()
 
-    W_data, v_data, Loss_data = dataLearning(x_data, y_data)
+    W_data, v_data, loss_data = dataLearning(x_data, y_data, 0.001, 0.9)
 
-    print('W_data = ', W_data)
-    print('v_data = ', v_data)
-    print('Loss_data = ', Loss_data)
+    plt.figure(2)
+    plt.plot(np.linspace(0,100,100),loss_data,color='orange')
+    print(loss_data[-1])
+    plt.show()

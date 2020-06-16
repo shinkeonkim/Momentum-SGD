@@ -1,7 +1,35 @@
 # Momentum-SGD
 
+## 20191564 김신건
 
-## 1. 모멘텀의 개요 및 동작 원리
+## 목차
+1. 모멘텀 SGD의 개요 및 동작 원리
+
+2. [모멘텀 SGD의 동작 코드 및 단위 테스트](##_2._모멘텀_SGD의_동작_코드와_단위_테스트)
+    1. TensorFlow를 활용한 모멘텀 동작 코드(Linear regression)
+    2. TensorFlow를 활용한 모멘텀 동작 코드 실행 결과
+    3. TensorFlow를 활용한 모멘텀 동작 코드 단위 테스트
+    4. 단위 테스트 결과
+    
+3. 모멘텀 SGD의 구체화
+    1. numpy 를 활용한 SGD 구체화
+    2. numpy 를 활용한 모멘텀 SGD 구체화
+    3. numpy 를 활용한 Linear regression 모멘텀 SGD 코드
+
+4. 구체화한 모듈의 단위테스트
+    1. 단위 테스트 코드 
+    2. 단위테스트 결과
+
+5. 로젠브룩 함수를 활용한 모멘텀 최적화 알고리즘 검증
+    1. tensorflow를 활용한 모멘텀 SGD 실행 코드
+    2. 5-1 실행 화면
+    3. numpy를 활용한 모멘텀 SGD 실행 코드
+    4. 5-3 실행 화면 
+    4. 통계
+
+6. 소감
+
+## 1. 모멘텀 SGD의 개요 및 동작 원리
 
 `모멘텀`은 물리에서 운동량, 관성, 탄성, 가속도 등을 의미하는 단어입니다. 따라서 모멘텀 SGD는 물리와 관련이 있음을 알 수 있으며, 경사하강법(SGD)에 관성을 더해 주는 알고리즘입니다.
 
@@ -17,43 +45,50 @@
 
 예를 들어 만약 가중치 매개변수가 2개 있는 최적해를 찾아가는 과정이라면, 어떤 곡면에서 공이 굴러가는 듯한 모습으로 최적해를 찾아가게 됩니다.
 
-## 2. 모멘텀의 동작 코드와 단위 테스트
+## 2. 모멘텀 SGD의 동작 코드와 단위 테스트
 
-### 2-1. TensorFlow를 활용한 모멘텀 동작 코드
+### 2-1. TensorFlow를 활용한 모멘텀 동작 코드(linear regression)
 
 #### TensorFlow
 
 **2차원 정규 분포 무작위 데이터 클래스**
+
+> filename: src/twoDData.py 
+
+2차원 평면에서 생성자의 매개변수로 주어지는
+`점의 개수`, `생성하려는 정규분포 데이터 x값의 평균` ,`생성하려는 정규분포 데이터 x값의 분산`, `y값 가중치`, `y값의 노이즈`에 따라 2차원 데이터를 생성하고, 관리하는 클래스입니다.
+
+
 ```python
 import numpy as np
 import matplotlib.pyplot as plt
 
 class twoDData:
-    def __init__(self, num_points, x_mid, x_range, y_mid, y_range):
+    def __init__(self, num_points, x_mid, x_range, y_weight, noise_range):
         self.num_points = num_points
         self.x_mid = x_mid
         self.x_range = x_range
-        self.y_mid = y_mid
-        self.y_range = y_range
+        self.y_weight = y_weight
+        self.noise_range = noise_range
         self.x_data = []
         self.y_data = []
 
-    def Data_Genearion(self):
-        vectors_set = []
+    def dataGeneration(self):
+        data_set = []
         for i in np.arange(self.num_points):
             x = np.random.normal(self.x_mid, self.x_range)
-            y = np.random.normal(self.y_mid, self.y_range)
-            vectors_set.append([x, y])
+            y = x * self.y_weight + np.random.randint(-self.noise_range, self.noise_range)
+            data_set.append([x, y])
 
-        x_data = [v[0] for v in vectors_set]
-        y_data = [v[1] for v in vectors_set]
+        x_data = [i[0] for i in data_set]
+        y_data = [i[1] for i in data_set]
 
         self.x_data = x_data
         self.y_data = y_data
         
         return  x_data, y_data
 
-    def Data_Draw(self):
+    def dataDraw(self):
         plt.plot(self.x_data, self.y_data,'ro')
         plt.ylim([min(self.y_data)-10,max(self.y_data) +10])
         plt.xlim([min(self.x_data)-10,max(self.x_data) +10])
@@ -63,10 +98,12 @@ class twoDData:
 ```
 
 **TensorFlow 핵심 Code**
+
+momentum optimizer의 핵심 코드입니다.
+
 ```python
 optimizer = tf.train.MomentumOptimizer(learning_rate=0.001, momentum=0.9)
 ```
-
 
 **TensorFlow 전체 코드**
 ```python
@@ -75,13 +112,17 @@ import matplotlib.pyplot as plt
 import tensorflow as tf
 from twoDData import twoDData
 
-def dataLearning(x_data, y_data):
+# linearRegression 코드
+def dataLearning(x_data, y_data, learning_rate, momentum):
+    # W = 기울기, b = y절편
     W = tf.Variable(tf.random_uniform([1], -1.0, 1.0))
     b = tf.Variable(tf.zeros([1]))
     y = W * x_data + b
     
+    # 손실 함수 정의
     loss = tf.reduce_mean(tf.square(y - y_data))
-    optimizer = tf.train.MomentumOptimizer(learning_rate=0.001, momentum=0.9)
+    # optimize는 MomentumOptimizer를 사용한다.
+    optimizer = tf.train.MomentumOptimizer(learning_rate = learning_rate, momentum = momentum)
 
     train = optimizer.minimize(loss)
     
@@ -103,65 +144,49 @@ def dataLearning(x_data, y_data):
 
     W_data = [t[0] for t in train_set]
     v_data = [t[1] for t in train_set]
-    Loss_data= [t[2] for t in train_set]
+    loss_data= [t[2] for t in train_set]
 
-    return W_data,v_data, Loss_data
+    return W_data,v_data, loss_data
 
 
 if __name__ == '__main__':
     num_points=50
-    data = twoDData(num_points, 5, 10, 5 , 1)
+    data = twoDData(num_points, 5, 5, 10 , 5)
     x_data, y_data=data.dataGeneration()
     data.dataDraw()
 
-    W_data, v_data, Loss_data = dataLearning(x_data, y_data)
+    W_data, v_data, loss_data = dataLearning(x_data, y_data, 0.001, 0.9)
 
-    print('W_data = ', W_data)
-    print('v_data = ', v_data)
-    print('Loss_data = ', Loss_data)
+    plt.figure(2)
+    plt.plot(np.linspace(0,100,100),loss_data,color='orange')
+    print(loss_data[-1])
+    plt.show()
 ```
 
-### 2-2. 모멘텀 동작 코드 단위 테스트
+## 2-2. TensorFlow를 활용한 모멘텀 동작 코드 실행 결과
 
-#### 2-2-1. 모멘텀 동작 코드 단위 테스트 코드
+### 생성 데이터
 
-```python
-import unittest
+<img src = "./img/tensorflow-linear_regression.png"> 
 
-from twoDData import twoDData
+### 최종 결과
 
-class TestTwoDData(unittest.TestCase):
+<img src = "./img/tensorflow-linear_regression-result.png"> 
 
-    def test_init(self):
-        data = twoDData(1000,0,10,0,10)
-        self.assertEqual(1000,data.num_points)
-        self.assertEqual(0,data.x_mid)
-        self.assertEqual(10,data.x_range)
-        self.assertEqual(0,data.y_mid)
-        self.assertEqual(10,data.y_range)
+### 오차 그래프
+
+<img src = "./img/tensorflow-linear_regression-error.png"> 
+
+## 2-3. TensorFlow를 활용한 모멘텀 동작 코드 단위 테스트
 
 
-    def test_datageneration(self):
-        data = twoDData(1000,0,10,0,10)
-        data.dataGeneration()
-        self.assertEqual(len(data.y_data), 1000)
-        self.assertEqual(len(data.x_data), 1000)
 
-if __name__ == '__main__':
-    unittest.main()
-```
-
-#### 2-2-2. 모멘텀 동작 코드 단위 테스트 결과
-
-```
-----------------------------------------------------------------------
-Ran 2 tests in 0.004s
-
-OK
-```
+## 2-4. 단위 테스트 결과
 
 
-## 3. 모멘텀의 구체화
+
+
+## 3. 모멘텀 SGD의 구체화
 
 ### 3-1. numpy 를 활용한 SGD 구체화
 ```python
@@ -175,7 +200,7 @@ class SGD:
             params[key] -= self.lr * grads[key]
 ```
 
-### 3-1. numpy 를 활용한 모멘텀 SGD 구체화
+### 3-2. numpy 를 활용한 모멘텀 SGD 구체화
 
 ```python
 from SGD import SGD
@@ -197,36 +222,28 @@ class Momentum(SGD):
             params[key] +=  self.v[key]
 ```
 
+### 3-3. numpy 를 활용한 Linear regression 모멘텀 SGD 코드
+
 ## 4. 구체화한 모듈의 단위테스트
 
 ### 4-1. 단위 테스트 코드  
-```python
-import unittest
-import Momentum
-import Rosenbrock
-
-class TestMomentum(unittest.TestCase):
-
-    def test_momentuminit(self):
-        m = Momentum.Momentum(1,1)
-        self.assertEqual(1, m.momentum)
-        self.assertEqual(1, m.lr)
-
-        m2 = Momentum.Momentum()
-        self.assertEqual(0.01, m2.lr)
-        self.assertEqual(0.9, m2.momentum)
-
-if __name__ == '__main__':
-    unittest.main()
-```
 
 ### 4-2. 단위 테스트 코드 결과
-```
-----------------------------------------------------------------------
-Ran 1 test in 0.000s
 
-OK
+
+## 5. 로젠브룩 함수를 활용한 모멘텀 최적화 알고리즘 검증
+
+### 5-1. 실행 코드
+```python
+
+
+
 ```
 
-## 5. 모멘텀 최적화 알고리즘 검증
-> 성능 검증은 로젠브룩 함수를 통해 진행하였습니다.
+### 5-2. 그래프 실행 화면
+
+
+### 5-3. 통계 그래프
+
+
+## 6. 소감
