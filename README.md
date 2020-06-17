@@ -15,6 +15,7 @@
     1. numpy 를 활용한 SGD 구체화
     2. numpy 를 활용한 모멘텀 SGD 구체화
     3. numpy 를 활용한 Linear regression 모멘텀 SGD 코드
+    4. 실행화면
 
 4. 구체화한 모듈의 단위테스트
     1. 단위 테스트 코드 
@@ -25,7 +26,7 @@
     2. 5-1 실행 화면
     3. numpy를 활용한 모멘텀 SGD 실행 코드
     4. 5-3 실행 화면 
-    4. 통계
+    5. 통계
 
 6. 소감
 
@@ -220,6 +221,8 @@ if __name__ == "__main__":
 
 ## 2-4. 단위 테스트 결과
 
+Linear Regression의 결과와 편미분을 통해 알 수 있는 선형 회귀의 수치와 비교하였고, 
+0.001보다 작은 오차를 가지고 수치가 도출되었는지 테스트하였고 모두 성공하였습니다.
 ```
 Running tests under Python 3.7.3: C:\Users\kimshinkeon\Anaconda3\python.exe
 [ RUN      ] tensorflowLinearRegressionTest.testLearning1
@@ -272,26 +275,299 @@ class Momentum(SGD):
 
 ### 3-3. numpy 를 활용한 Linear regression 모멘텀 SGD 코드
 
+```python
+momentumOptimizer = Momentum(lr= rate, momentum=momentum)
+optimizerParams = {"a": a, "b":b}
+optimizerGrads = {"a":0 ,"b": 0}
+```
+와 같이 3-2에서 만든 Momentum 클래스의 객체를 사용하여 Linear regression 코드를 작성하였고 데이터 시각화를 위해 
+4개의 그래프를 출력하였습니다.
+
+4개의 그래프는, 1) MSE를 3차원으로 표현한 그래프, 2) 1번 그래프의 등고선, 3) 현재까지 찾은 최적해의 선형 함수와 데이터들의 분포 4) 현재 step까지의 전체 MSE 오차를 선그래프로 나타낸것 입니다. 실행 화면은 3-4에서 확인할 수 있습니다.
+
+또한, dataLearning 함수를 만들어놓아서 Linear Regression 과정을 다른 파일에서도 사용할 수 있도록(모듈화) 하였습니다.
+
+```python
+import numpy as np
+import matplotlib.pyplot as plt
+from twoDData import twoDData
+from mpl_toolkits.mplot3d import Axes3D
+from Momentum import Momentum
+
+def da(y,y_p,x):
+    return np.sum((y-y_p)*(-x))
+
+def db(y,y_p):
+    return np.sum((y-y_p)*(-1))
+
+# MSE를 반환하는 함수
+def linear_loss(a, b, x, y):
+    SSE = np.sum((y - (a * x + b))**2) / (2 * len(x))
+    return SSE / len(x)
+
+# 기울기, y절편, MSE를 3차원 평면으로 표시하는 함수
+def show_surface(x,y):
+    a = np.linspace(-50,50,500)
+    b = np.linspace(-50,50,500)
+    x = np.array(x)
+    y = np.array(y)
+
+    allMSE = np.zeros(shape=(len(a),len(b)))
+    for i in range(0,len(a)):
+        for j in range(0,len(b)):
+            a0 = a[i]
+            b0 = b[j]
+            MSE = linear_loss(a=a0,b=b0,x=x,y=y)
+            allMSE[i][j] = MSE
+
+    a,b = np.meshgrid(a, b)
+
+    return [a,b,allMSE]
+
+def dataLearning(x_data, y_data, learning_rate, momentum, step, a, b):
+    num_points = len(x_data)
+    
+    # 그래프 출력에 사용할 x 최소값, 최대값
+    min_x = min(x_data)
+    max_x = max(x_data)
+
+    # momentum optimizer
+    momentumOptimizer = Momentum(lr= learning_rate, momentum=momentum)
+    optimizerParams = {"a": a, "b":b}
+    optimizerGrads = {"a":0 ,"b": 0}
+
+    all_loss = []
+    all_step = []
+    last_a = a
+    last_b = b
+
+    for step in range(1,step+1):
+        loss = 0
+        all_da = 0
+        all_db = 0
+        
+        y_star = optimizerParams["a"] * x_data + optimizerParams["b"]
+        loss = linear_loss(optimizerParams["a"],optimizerParams["b"],x_data,y_data)
+
+        optimizerGrads["a"] = da(y_data, y_star, x_data)
+        optimizerGrads["b"] = db(y_data, y_star)
+            
+        all_loss.append(loss)
+        all_step.append(step)
+
+        last_a = optimizerParams["a"]
+        last_b = optimizerParams["b"]
+
+        momentumOptimizer.update(params=optimizerParams, grads=optimizerGrads)
+
+    return [last_a, last_b]
+
+
+if __name__ == "__main__":
+    
+    # learning rate
+    rate = 0.0001
+
+    # 관성
+    momentum = 0.9
+
+    # 시작점
+    a = -20.0
+    b = -20.0
+
+    # 점의 개수
+    num_points=50
+    # 데이터 생성
+    data = twoDData(num_points, 5, 5, 10, 5)
+    x, y=data.dataGeneration()
+
+    # 그래프 출력에 사용할 x 최소값, 최대값
+    min_x = min(x)
+    max_x = max(x)
+
+    # momentum optimizer
+    momentumOptimizer = Momentum(lr= rate, momentum=momentum)
+    optimizerParams = {"a": a, "b":b}
+    optimizerGrads = {"a":0 ,"b": 0}
+
+
+    # ----- 1,1 subplot 부분 ------
+
+    # 평면 출력
+    [aa,bb,MSE] = show_surface(x,y)
+    # 전치 행렬로 바꾸기
+    SSE = MSE.T
+
+    fig = plt.figure(1, figsize=(12, 8))
+    fig.suptitle('momentum SGD learning rate: %.4f' %(rate), fontsize=20)
+
+    ax = fig.add_subplot(2, 2, 1, projection='3d')
+    ax.plot_surface(aa, bb, MSE, rstride=2, cstride=2, cmap='rainbow')
+
+    # ----- 1,1 subplot 부분 end -----
+
+    plt.subplot(2,2,2)
+    ta = np.linspace(-50, 50, 500)
+    tb = np.linspace(-50, 50, 500)
+    plt.contourf(aa,bb,SSE,15,alpha=0.5)
+    C = plt.contour(aa,bb,SSE,15,colors="green")
+    plt.clabel(C,inline=True)
+    plt.xlabel('a')
+    plt.ylabel('b')
+
+
+    plt.ion()
+
+    all_loss = []
+    all_step = []
+    last_a = a
+    last_b = b
+
+    for step in range(1,200):
+        loss = 0
+        all_da = 0
+        all_db = 0
+        
+        y_star = optimizerParams["a"] * x + optimizerParams["b"]
+        loss = linear_loss(optimizerParams["a"],optimizerParams["b"],x,y)
+
+        optimizerGrads["a"] = da(y, y_star, x)
+        optimizerGrads["b"] = db(y, y_star)
+
+        ax.scatter(optimizerParams["a"], optimizerParams["b"], loss, color='black')
+        plt.subplot(2,2,2)
+        plt.scatter(optimizerParams["a"], optimizerParams["b"],s=5,color='blue')
+        plt.plot([last_a,optimizerParams["a"]],[last_b,optimizerParams["b"]],color='aqua')
+
+        plt.subplot(2, 2, 3)
+        plt.cla()
+        plt.plot(x, y, 'ro')
+        virtual_x = np.linspace(min_x,max_x,2)
+        virtual_y = optimizerParams["a"] * virtual_x + optimizerParams["b"]
+        plt.plot(virtual_x, virtual_y)
+            
+        all_loss.append(loss)
+        all_step.append(step)
+        plt.subplot(2,2,4)
+        plt.plot(all_step,all_loss,color='orange')
+        plt.xlabel("step")
+        plt.ylabel("loss")
+
+        last_a = optimizerParams["a"]
+        last_b = optimizerParams["b"]
+
+        momentumOptimizer.update(params=optimizerParams, grads=optimizerGrads)
+
+        print("step: ", step, " loss: ", loss)
+        plt.show()
+        plt.pause(0.01)
+        
+    plt.show()
+    plt.pause(99)
+```
+### 3-4. 실행 화면
+
+<img src = "./img/numpy-linear_regression.png"> 
+
 ## 4. 구체화한 모듈의 단위테스트
 
 ### 4-1. 단위 테스트 코드  
+```python
+import unittest
+import Momentum
+import Rosenbrock
+import numpy as np
+from MomentumLinearRegression import  dataLearning
+from twoDData import twoDData
+from Momentum import Momentum
+
+class TestMomentum(unittest.TestCase):
+
+    def testMomentuminit(self):
+        m = Momentum(1,1)
+        self.assertEqual(1, m.momentum)
+        self.assertEqual(1, m.lr)
+
+        m2 = Momentum()
+        self.assertEqual(0.01, m2.lr)
+        self.assertEqual(0.9, m2.momentum)
+
+    def testMomentumLinearRegression(self):
+        # learning rate
+        rate = 0.0001
+        # 관성
+        momentum = 0.9
+        # 시작점
+        a = -20.0
+        b = -20.0
+        # 점의 개수
+        num_points=50
+        # 데이터 생성
+        data = twoDData(num_points, 5, 5, 10, 5)
+        x_data, y_data=data.dataGeneration()
+
+        last_W, last_v = dataLearning(x_data, y_data, rate,momentum,1000,a,b)
+
+        expected_W = (num_points * np.sum(x_data * y_data) - (np.sum(x_data) * np.sum(y_data))) / (num_points* np.sum(x_data**2) - (np.sum(x_data))**2)
+        expected_v = (np.sum(y_data) - expected_W*np.sum(x_data))/num_points
+
+        self.assertAlmostEqual(expected_W, last_W, delta = 0.001)
+        self.assertAlmostEqual(expected_v, last_v, delta = 0.001)
+
+    def testMomentumLinearRegression2(self):
+        # learning rate
+        rate = 0.0001
+        # 관성
+        momentum = 0.9
+        # 시작점
+        a = 0.0
+        b = 0.0
+        # 점의 개수
+        num_points=100
+        # 데이터 생성
+        data = twoDData(num_points, 10, 5, 10, 5)
+        x_data, y_data=data.dataGeneration()
+
+        last_W, last_v = dataLearning(x_data, y_data, rate,momentum,1000,a,b)
+
+        expected_W = (num_points * np.sum(x_data * y_data) - (np.sum(x_data) * np.sum(y_data))) / (num_points* np.sum(x_data**2) - (np.sum(x_data))**2)
+        expected_v = (np.sum(y_data) - expected_W*np.sum(x_data))/num_points
+
+        self.assertAlmostEqual(expected_W, last_W, delta = 0.001)
+        self.assertAlmostEqual(expected_v, last_v, delta = 0.001)
+if __name__ == '__main__':
+    unittest.main()
+```
 
 ### 4-2. 단위 테스트 코드 결과
 
+Linear Regression의 결과와 편미분을 통해 알 수 있는 선형 회귀의 수치와 비교하였고, 
+0.001보다 작은 오차를 가지고 수치가 도출되었는지 테스트하였고 모두 성공하였습니다.
+
+```
+----------------------------------------------------------------------
+Ran 3 tests in 0.055s
+
+OK
+```
 
 ## 5. 로젠브룩 함수를 활용한 모멘텀 최적화 알고리즘 검증
 
-### 5-1. 실행 코드
+### 5-1. tensorflow를 활용한 모멘텀 SGD 실행 코드
+
 ```python
 
 
 
 ```
 
-### 5-2. 그래프 실행 화면
+### 5-2. 5-1 실행 화면
 
 
-### 5-3. 통계 그래프
+### 5-3. numpy를 활용한 모멘텀 SGD 실행 코드
 
+### 5-4. 5-3 실행 화면 
+
+### 5-5. 통계
 
 ## 6. 소감
