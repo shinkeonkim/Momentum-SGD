@@ -757,7 +757,7 @@ plt.pause(9999)
 2번째 그래프는 로젠브록 함수의 등고선 그래프와 최적해를 찾아가는 과정을 그리는 그래프입니다.
 3번째 그래프는 정해진 해 (1,1)과의 오차를 step마다 나타낸 그래프입니다. 추가적으로, step이 커지면서 그래프의 개형이 눈에 띄지 않아 x축은 logscale로 나타내었습니다.
 
-<img src = "./img/tensorflow-rosenbrock.png"> 
+<img src = "./img/numpy-rosenbrock.png"> 
 
 이 결과를 통해, numpy와 기본 python 코드로 구현한 Momentum 클래스를 활용한 코드가 tensorflow의 momentumOptimize와 비슷한 경로를 가지고, 1,1에 점차 수렴해나가는 것을 확인할 수 있습니다.
 
