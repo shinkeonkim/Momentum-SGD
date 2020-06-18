@@ -3,32 +3,31 @@
 ## 20191564 김신건
 
 ## 목차
-1. 모멘텀 SGD의 개요 및 동작 원리
+1. [모멘텀 SGD의 개요 및 동작 원리](##1.-모멘텀-SGD의-개요-및-동작-원리)
 
-2. [모멘텀 SGD의 동작 코드 및 단위 테스트](##_2._모멘텀_SGD의_동작_코드와_단위_테스트)
-    1. TensorFlow를 활용한 모멘텀 동작 코드(Linear regression)
-    2. TensorFlow를 활용한 모멘텀 동작 코드 실행 결과
-    3. TensorFlow를 활용한 모멘텀 동작 코드 단위 테스트
-    4. 단위 테스트 결과
+2. [모멘텀 SGD의 동작 코드 및 단위 테스트](##-2.-모멘텀-SGD의-동작-코드와-단위-테스트)
+    1. [TensorFlow를 활용한 모멘텀 동작 코드(Linear regression)](###2-1.-TensorFlow를-활용한-모멘텀-동작-코드(linear-regression))
+    2. [TensorFlow를 활용한 모멘텀 동작 코드 실행 결과](###2-2.-TensorFlow를-활용한-모멘텀-동작-코드-실행-결과)
+    3. [TensorFlow를 활용한 모멘텀 동작 코드 단위 테스트](###2-3.-TensorFlow를-활용한-모멘텀-동작-코드-단위-테스트)
+    4. [단위 테스트 결과](###2-4.-단위-테스트-결과)
     
-3. 모멘텀 SGD의 구체화
-    1. numpy 를 활용한 SGD 구체화
-    2. numpy 를 활용한 모멘텀 SGD 구체화
-    3. numpy 를 활용한 Linear regression 모멘텀 SGD 코드
-    4. 실행화면
+3. [모멘텀 SGD의 구체화](##3.-모멘텀-SGD의-구체화)
+    1. [numpy 를 활용한 SGD 구체화](###3-1.-numpy-를-활용한-SGD-구체화)
+    2. [numpy 를 활용한 모멘텀 SGD 구체화](###3-2.-numpy-를-활용한-모멘텀-SGD-구체화)
+    3. [numpy 를 활용한 Linear regression 모멘텀 SGD 코드](###3-3.-numpy-를-활용한-Linear-regression-모멘텀-SGD-코드)
+    4. [실행화면](###3-4.-실행-화면)
 
-4. 구체화한 모듈의 단위테스트
-    1. 단위 테스트 코드 
-    2. 단위테스트 결과
+4. [구체화한 모듈의 단위테스트](##4.-구체화한-모듈의-단위테스트)
+    1. [단위 테스트 코드](###4-1.-단위-테스트-코드)
+    2. [단위테스트 결과](###4-2.-단위-테스트-코드-결과)
 
-5. 로젠브룩 함수를 활용한 모멘텀 최적화 알고리즘 검증
-    1. tensorflow를 활용한 모멘텀 SGD 실행 코드
-    2. 5-1 실행 화면
-    3. numpy를 활용한 모멘텀 SGD 실행 코드
-    4. 5-3 실행 화면 
-    5. 통계
+5. [로젠브룩 함수를 활용한 모멘텀 최적화 알고리즘 검증](##5.-로젠브룩-함수를-활용한-모멘텀-최적화-알고리즘-검증)
+    1. [tensorflow를 활용한 모멘텀 SGD 실행 코드](###5-1.-tensorflow를-활용한-모멘텀-SGD-실행-코드)
+    2. [5-1 실행 화면](###5-2.-5-1-실행-화면)
+    3. [numpy를 활용한 모멘텀 SGD 실행 코드](###5-3.-numpy를-활용한-모멘텀-SGD-실행-코드)
+    4. [5-3 실행 화면](###5-4.-5-3-실행-화면)
 
-6. 소감
+6. [소감](##6.-소감)
 
 ## 1. 모멘텀 SGD의 개요 및 동작 원리
 
@@ -182,6 +181,8 @@ if __name__ == '__main__':
 
 ## 2-3. TensorFlow를 활용한 모멘텀 동작 코드 단위 테스트
 
+> filename: src/testTensorflowLinearRegression.py
+
 ```python
 import numpy as np
 import matplotlib.pyplot as plt
@@ -240,6 +241,9 @@ OK (skipped=1)
 ## 3. 모멘텀 SGD의 구체화
 
 ### 3-1. numpy 를 활용한 SGD 구체화
+
+> filename: src/SGD.py
+
 ```python
 class SGD:
 
@@ -252,6 +256,8 @@ class SGD:
 ```
 
 ### 3-2. numpy 를 활용한 모멘텀 SGD 구체화
+
+> filename: src/Momentum.py
 
 ```python
 from SGD import SGD
@@ -274,6 +280,8 @@ class Momentum(SGD):
 ```
 
 ### 3-3. numpy 를 활용한 Linear regression 모멘텀 SGD 코드
+
+> filename: src/MomentumLinearRegression.py
 
 ```python
 momentumOptimizer = Momentum(lr= rate, momentum=momentum)
@@ -472,6 +480,9 @@ if __name__ == "__main__":
 ## 4. 구체화한 모듈의 단위테스트
 
 ### 4-1. 단위 테스트 코드  
+
+> filename: src/testNumpyLinearRegression.py
+
 ```python
 import unittest
 import Momentum
@@ -555,19 +566,204 @@ OK
 
 ### 5-1. tensorflow를 활용한 모멘텀 SGD 실행 코드
 
+> filename: src/tensorflowRosenbrock.py
+
 ```python
+import numpy as np
+import tensorflow as tf
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+from Rosenbrock import  Rosenbrock
 
+learning_rate = 0.000015
+a = -5.0
+b = -5.0
+step = 5000
 
+x = tf.Variable(([[a], [b]]))
+c = tf.placeholder(tf.float32, [4, 1])
+coefficients = np.array([[1.0], [-1.0], [100.0], [-1.0]])
+rosenbrock = (c[0][0] + c[1][0]*x[0][0])**2 + c[2][0]*((x[1][0] + c[3][0]*x[0][0]*x[0][0])**2)
 
+optimizer = tf.train.MomentumOptimizer(learning_rate=learning_rate, momentum=0.9).minimize(rosenbrock)
+
+init = tf.global_variables_initializer()
+session = tf.Session()
+session.run(init)
+session.run(x)
+
+session.run(optimizer, feed_dict={c:coefficients})
+
+Rosenbrock_model = Rosenbrock()
+xx = np.linspace(-10, 10, 200)
+yy = np.linspace(-10, 10, 200)
+X, Y = np.meshgrid(xx, yy)
+Z = Rosenbrock_model.f2(X, Y)
+last_x = [[a], [b]]
+
+fig = plt.figure(1, figsize=(16, 10))
+fig.suptitle('momentum SGD', fontsize=15)
+ax = fig.add_subplot(2, 2, 1, projection='3d')
+ax.set_top_view()
+ax.plot_surface(X, Y, Z, rstride=2, cstride=2, cmap='rainbow')
+
+plt.subplot(2,2,2)
+plt.plot(last_x[0][0], last_x[1][0], 'bo', markersize=10)
+plt.plot(1, 1, 'ro', markersize=10)
+levels = np.logspace(-1, 10, 10)
+plt.contourf(X, Y, Z, alpha=0.2, levels=levels)
+plt.contour(X, Y, Z, colors="green", levels=levels, zorder=0)
+plt.xticks(np.linspace(-10, 10, 21))
+plt.yticks(np.linspace(-10, 10, 21))
+plt.xlabel("x")
+plt.ylabel("y")
+plt.ion()
+
+all_loss = []
+
+for i in range(step):
+    session.run(optimizer, feed_dict={c:coefficients})
+    ret = session.run(x)
+    
+    loss = (ret[0][0] - 1) ** 2 + (ret[1][0] - 1) ** 2
+    all_loss.append(loss)
+    ax.scatter(ret[0][0], ret[1][0], Rosenbrock_model.f2(ret[0][0], ret[1][0]), 'bo')
+
+    plt.subplot(2,2,2)
+    plt.scatter(ret[0][0],ret[1][0],s=5,color='blue')
+    plt.plot([last_x[0][0],ret[0][0]],[last_x[1][0], ret[1][0]],color='aqua')
+    last_x = ret
+
+    plt.subplot(2,2,4)
+    plt.cla()
+    
+    plt.grid(True)
+    plt.xscale('log')
+    plt.plot(np.linspace(0,len(all_loss),len(all_loss)), all_loss, color = 'orange')
+
+    plt.show()
+    plt.pause(0.00001)
+
+plt.show()
+plt.pause(999)
 ```
 
 ### 5-2. 5-1 실행 화면
 
+1번째 그래프는 로젠브록 함수를 3차원 그래프로 표현한 그래프입니다.
+2번째 그래프는 로젠브록 함수의 등고선 그래프와 최적해를 찾아가는 과정을 그리는 그래프입니다.
+3번째 그래프는 정해진 해 (1,1)과의 오차를 step마다 나타낸 그래프입니다. 추가적으로, step이 커지면서 그래프의 개형이 눈에 띄지 않아 x축은 logscale로 나타내었습니다.
+
+<img src = "./img/tensorflow-rosenbrock.png"> 
 
 ### 5-3. numpy를 활용한 모멘텀 SGD 실행 코드
 
+> filename: src/numpyRosenbrock.py
+
+```python
+import numpy as np
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+from Rosenbrock import  Rosenbrock
+from SGD import SGD
+from Momentum import Momentum
+
+plt.rc('font', family='Malgun Gothic')
+plt.rc('axes', unicode_minus=False)
+
+momentum = 0.9
+learning_rate = 0.000015
+step = 5000
+
+x, y = -5,-5 # starting_point
+
+Momentum_model = Momentum(lr = learning_rate, momentum = momentum)
+# Momentum_model = SGD(lr = learning_rate)
+Rosenbrock_model = Rosenbrock()
+
+
+xx = np.linspace(-5, 5, 100)
+yy = np.linspace(-5, 5, 100)
+X, Y = np.meshgrid(xx, yy)
+Z = Rosenbrock_model.f2(X, Y)
+
+
+fig = plt.figure(1, figsize=(12, 8))
+fig.suptitle('momentum SGD', fontsize=15)
+ax = fig.add_subplot(2, 2, 1, projection='3d')
+ax.set_top_view()
+ax.plot_surface(X, Y, Z, rstride=2, cstride=2, cmap='rainbow')
+
+plt.subplot(2,2,2)
+plt.plot(x, y, 'bo', markersize=10)
+plt.plot(1, 1, 'ro', markersize=10)
+levels = np.logspace(-1, 5, 10)
+plt.contourf(X, Y, Z, alpha=0.2, levels=levels)
+plt.contour(X, Y, Z, colors="green", levels=levels, zorder=0)
+plt.xticks(np.linspace(-5, 5, 11))
+plt.yticks(np.linspace(-5, 5, 11))
+plt.xlabel("x")
+plt.ylabel("y")
+
+
+all_loss = []
+all_step = []
+all_x = [x]
+all_y = [y]
+last_x = x
+last_y = y
+loss = 0
+vx, vy = [0, 0]
+
+plt.ion()
+xy = {'x': x, 'y': y}
+for step in range(1,step+1):
+    g = Rosenbrock_model.f2g(xy['x'], xy['y'])
+    Momentum_model.update(xy, {"x":g[0], "y": g[1]})
+    
+    ax.plot3D(all_x, all_y, Rosenbrock_model.f2(xy['x'], xy['y']), 'black')
+    
+    plt.subplot(2,2,2)
+    plt.scatter(xy['x'],xy['y'],s=5,color='blue')
+    plt.plot([last_x,xy['x']],[last_y,xy['y']],color='aqua')
+    
+    loss = (xy['x'] - 1) ** 2 + (xy['y'] - 1) ** 2
+
+    all_loss.append(loss)
+    all_step.append(step)
+
+    plt.subplot(2,2,4)
+    plt.xscale('log')
+    plt.plot(all_step,all_loss,color='orange')
+    plt.xlabel("step")
+    plt.ylabel("loss")
+    plt.grid(True)
+    last_x = xy['x']
+    last_y = xy['y']
+    all_x.append(last_x)
+    all_y.append(last_y)
+
+    plt.show()
+    plt.pause(0.0001)
+
+plt.show()
+print(last_x, last_y)    
+plt.pause(9999)
+```
 ### 5-4. 5-3 실행 화면 
 
-### 5-5. 통계
+5-2 실행화면과 마찬가지로, 
+1번째 그래프는 로젠브록 함수를 3차원 그래프로 표현한 그래프입니다.
+2번째 그래프는 로젠브록 함수의 등고선 그래프와 최적해를 찾아가는 과정을 그리는 그래프입니다.
+3번째 그래프는 정해진 해 (1,1)과의 오차를 step마다 나타낸 그래프입니다. 추가적으로, step이 커지면서 그래프의 개형이 눈에 띄지 않아 x축은 logscale로 나타내었습니다.
+
+<img src = "./img/tensorflow-rosenbrock.png"> 
+
+이 결과를 통해, numpy와 기본 python 코드로 구현한 Momentum 클래스를 활용한 코드가 tensorflow의 momentumOptimize와 비슷한 경로를 가지고, 1,1에 점차 수렴해나가는 것을 확인할 수 있습니다.
 
 ## 6. 소감
+
+강의를 통해 배운 경사하강법보다 더 심화적인 모멘텀 SGD를 다루면서
+여러 공부를 할 수 있었습니다. 예를 들어, 수업을 들으며 잘 이해가 되지 않았던 편미분이나, 경사하강법, 로젝브록 함수 등이 정확히 어떤 식인지에 대해 자세히 공부해보고 코드로 구현해보면서 잘 이해할 수 있었습니다.
+
+또한, 이번 공부와 기회를 발판삼아 머신러닝에 대해 자세히 공부해보고 현재 공부중인 django, react 등의 서버 단에서 사용자 컨텐츠 추천 알고리즘을 머신러닝으로 구현해보고자 합니다. 감사합니다.

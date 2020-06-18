@@ -9,14 +9,14 @@ plt.rc('font', family='Malgun Gothic')
 plt.rc('axes', unicode_minus=False)
 
 momentum = 0.9
-learning_rate = 0.00005
+learning_rate = 0.000015
+step = 5000
 
-x, y = -2,-2 # starting_point
+x, y = -5,-5 # starting_point
 
 Momentum_model = Momentum(lr = learning_rate, momentum = momentum)
 # Momentum_model = SGD(lr = learning_rate)
 Rosenbrock_model = Rosenbrock()
-
 
 xx = np.linspace(-5, 5, 100)
 yy = np.linspace(-5, 5, 100)
@@ -53,24 +53,23 @@ vx, vy = [0, 0]
 
 plt.ion()
 xy = {'x': x, 'y': y}
-for step in range(1,1001):
+for step in range(1,step+1):
     g = Rosenbrock_model.f2g(xy['x'], xy['y'])
     Momentum_model.update(xy, {"x":g[0], "y": g[1]})
     
-    ax.plot3D(all_x, all_y, Rosenbrock_model.f2(xy['x'], xy['y']), 'gray')
+    ax.plot3D(all_x, all_y, Rosenbrock_model.f2(xy['x'], xy['y']), 'bo')
     
     plt.subplot(2,2,2)
     plt.scatter(xy['x'],xy['y'],s=5,color='blue')
     plt.plot([last_x,xy['x']],[last_y,xy['y']],color='aqua')
     
     loss = (xy['x'] - 1) ** 2 + (xy['y'] - 1) ** 2
-    
-    print(xy['x'],xy['y'], loss)
 
     all_loss.append(loss)
     all_step.append(step)
 
     plt.subplot(2,2,4)
+    plt.xscale('log')
     plt.plot(all_step,all_loss,color='orange')
     plt.xlabel("step")
     plt.ylabel("loss")
@@ -80,8 +79,9 @@ for step in range(1,1001):
     all_x.append(last_x)
     all_y.append(last_y)
 
-    plt.show()
-    plt.pause(0.0001)
+    # plt.show()
+    # plt.pause(0.0001)
 
-plt.show()    
+plt.show()
+print(last_x, last_y)    
 plt.pause(9999)
