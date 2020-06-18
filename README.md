@@ -6,7 +6,7 @@
 1. [모멘텀 SGD의 개요 및 동작 원리](#1-모멘텀-SGD의-개요-및-동작-원리)
 
 2. [모멘텀 SGD의 동작 코드 및 단위 테스트](#-2-모멘텀-SGD의-동작-코드와-단위-테스트)
-    1. [TensorFlow를 활용한 모멘텀 동작 코드(Linear regression)](#2-1-TensorFlow를-활용한-모멘텀-동작-코드(linear-regression))
+    1. [TensorFlow를 활용한 모멘텀 동작 코드(Linear regression)](#2-1-TensorFlow를-활용한-모멘텀-동작-코드linear-regression)
     2. [TensorFlow를 활용한 모멘텀 동작 코드 실행 결과](#2-2-TensorFlow를-활용한-모멘텀-동작-코드-실행-결과)
     3. [TensorFlow를 활용한 모멘텀 동작 코드 단위 테스트](#2-3-TensorFlow를-활용한-모멘텀-동작-코드-단위-테스트)
     4. [단위 테스트 결과](#2-4-단위-테스트-결과)
